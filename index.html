@@ -15,100 +15,58 @@ label{font-weight:800;display:block;margin-bottom:8px}textarea{width:100%;min-he
 button{border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:800}.primary{width:100%;background:#111827;color:#fff;margin-top:10px}.secondary{background:#eef1f5;color:#263241}.share{background:#e9f5ff;color:#075985}
 .hidden{display:none}.game{border:1px solid #e0e5ea;border-radius:14px;overflow:hidden;margin:12px 0}.game h3{margin:0;padding:12px 14px;background:#f7f8fa;font-size:17px}
 .player{padding:7px 12px;border-bottom:1px solid #edf0f3;font-size:15px}.player:last-child{border-bottom:0}
-.next{color:#6b7280;font-size:13px}.badge{display:inline-block;font-size:11px;background:#e9f5ff;color:#075985;padding:3px 7px;border-radius:99px;margin-left:5px}
+.badge{display:inline-block;font-size:11px;background:#e9f5ff;color:#075985;padding:3px 7px;border-radius:99px;margin-left:5px}
 .stat{display:flex;gap:8px;flex-wrap:wrap}.stat span{background:#f5f6f8;border-radius:10px;padding:8px 10px;font-size:13px}
-.notice{background:#fff8e6;border-radius:12px;padding:10px;font-size:13px;color:#7a5310;margin-top:10px}
-@media(max-width:430px){.wrap{padding:10px}.hero{border-radius:16px}}
+.notice{background:#fff8e6;border-radius:12px;padding:10px;font-size:13px;color:#7a5310;margin-top:10px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.field{background:#f7f8fa;border-radius:12px;padding:10px}.field label{font-size:13px;margin-bottom:6px}.field input{width:100%;border:1px solid #d8dde4;border-radius:9px;padding:10px;font-size:17px;font-weight:700}.modebox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.modebox button{border:1px solid #d8dde4;background:#fff;color:#263241}.modebox button.active{background:#111827;color:#fff;border-color:#111827}.teaminputs{display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.teaminputs.show{display:grid}.teaminputs textarea{min-height:150px}.teamtitle{font-size:13px;font-weight:800;margin-bottom:6px}
+@media(max-width:430px){.wrap{padding:10px}.hero{border-radius:16px}.teaminputs{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="hero">
-<h1>⚽ 오늘 축구팀 편성</h1>
-<p>도착 순서대로 입력하면 4게임 출전 기회를 공평하게 배정합니다.</p>
-</div>
-
+<div class="hero"><h1>⚽ 오늘 축구팀 편성</h1><p>도착 순서대로 입력하면 출전 기회를 공평하게 배정합니다.</p></div>
 <div class="card">
 <label>① 오늘 온 사람</label>
-<textarea id="names" placeholder="도착한 순서대로 한 줄에 한 명씩&#10;김민수&#10;이철수&#10;박영수&#10;최성민"></textarea>
+<textarea id="names" placeholder="도착한 순서대로 한 줄에 한 명씩
+김민수
+이철수
+박영수
+최성민"></textarea>
 <div class="info" id="count">0명</div>
-<div class="buttons">
-<button class="secondary" onclick="sample()">예시</button>
-<button class="secondary" onclick="clearAll()">초기화</button>
+<label style="margin-top:14px">② 편성 방식</label>
+<div class="modebox"><button id="singleMode" class="active" onclick="setMode('single')">⚽ 상대팀과 경기</button><button id="dualMode" onclick="setMode('dual')">🆚 1팀 vs 2팀</button></div>
+<div id="dualInputs" class="teaminputs">
+<div><div class="teamtitle">1팀 — 도착 순서대로</div><textarea id="team1" placeholder="김민수
+이철수
+박영수"></textarea></div>
+<div><div class="teamtitle">2팀 — 도착 순서대로</div><textarea id="team2" placeholder="최성민
+정우성
+강민호"></textarea></div>
 </div>
-<button class="primary" onclick="makeTeams()">⚽ 4게임 편성하기</button>
+<label style="margin-top:14px">③ 경기 설정</label>
+<div class="settings"><div class="field"><label for="gameCount">게임 수</label><input id="gameCount" type="number" min="1" max="20" value="4"></div><div class="field"><label for="teamSize">게임당 출전 인원</label><input id="teamSize" type="number" min="1" max="30" value="10"></div></div>
+<div class="info">설정한 게임 수 × 경기당 인원만큼 출전 기회를 도착 순서대로 공평하게 배분합니다.</div>
+<div class="buttons"><button class="secondary" onclick="sample()">예시</button><button class="secondary" onclick="clearAll()">초기화</button></div>
+<button class="primary" onclick="makeTeams()">⚽ 자동 편성하기</button>
 </div>
-
-<div id="result" class="hidden">
-<div class="card">
-<b>편성 완료</b>
-<div class="stat" id="stats"></div>
-<button class="share" style="width:100%;margin-top:10px" onclick="shareResult()">💬 카톡으로 결과 공유</button>
-<button class="secondary" style="width:100%;margin-top:8px" onclick="copyResult()">📋 결과 복사</button>
+<div id="result" class="hidden"><div class="card"><b>편성 완료</b><div class="stat" id="stats"></div><button class="share" style="width:100%;margin-top:10px" onclick="shareResult()">💬 카톡으로 결과 공유</button><button class="secondary" style="width:100%;margin-top:8px" onclick="copyResult()">📋 결과 복사</button></div><div id="games"></div></div>
 </div>
-<div id="games"></div>
-</div>
-</div>
-
 <script>
-const el=id=>document.getElementById(id);
-const namesEl=el('names');
-namesEl.addEventListener('input',()=>{updateCount();localStorage.setItem('soccer_names',namesEl.value)});
-const saved=localStorage.getItem('soccer_names');if(saved)namesEl.value=saved;updateCount();
-
-function players(){
- const a=namesEl.value.split(/[\n,]+/).map(x=>x.trim()).filter(Boolean);
- const s=new Set();return a.filter(x=>{if(s.has(x))return false;s.add(x);return true});
-}
-function updateCount(){el('count').textContent=players().length+'명'}
-function sample(){namesEl.value=Array.from({length:23},(_,i)=>`${i+1}번 선수`).join('\n');updateCount()}
-function clearAll(){namesEl.value='';localStorage.removeItem('soccer_names');updateCount();el('result').classList.add('hidden')}
-
+const el=id=>document.getElementById(id);const namesEl=el('names'),gameEl=el('gameCount'),sizeEl=el('teamSize');let mode=localStorage.getItem('soccer_mode')||'single';
+function save(){localStorage.setItem('soccer_names',namesEl.value);localStorage.setItem('soccer_games',gameEl.value);localStorage.setItem('soccer_size',sizeEl.value);localStorage.setItem('soccer_mode',mode);localStorage.setItem('soccer_team1',el('team1').value);localStorage.setItem('soccer_team2',el('team2').value)}
+function parseNames(text){const a=text.split(/[\n,]+/).map(x=>x.trim()).filter(Boolean),s=new Set();return a.filter(x=>{if(s.has(x))return false;s.add(x);return true})}
+function players(){return parseNames(namesEl.value)}function updateCount(){el('count').textContent=players().length+'명'}
+function setMode(m){mode=m;el('singleMode').classList.toggle('active',m==='single');el('dualMode').classList.toggle('active',m==='dual');el('dualInputs').classList.toggle('show',m==='dual');el('names').style.display=m==='single'?'block':'none';el('count').style.display=m==='single'?'block':'none';save()}
+namesEl.addEventListener('input',()=>{updateCount();save()});gameEl.addEventListener('input',save);sizeEl.addEventListener('input',save);el('team1').addEventListener('input',save);el('team2').addEventListener('input',save);
+if(localStorage.getItem('soccer_names'))namesEl.value=localStorage.getItem('soccer_names');if(localStorage.getItem('soccer_games'))gameEl.value=localStorage.getItem('soccer_games');if(localStorage.getItem('soccer_size'))sizeEl.value=localStorage.getItem('soccer_size');if(localStorage.getItem('soccer_team1'))el('team1').value=localStorage.getItem('soccer_team1');if(localStorage.getItem('soccer_team2'))el('team2').value=localStorage.getItem('soccer_team2');updateCount();setMode(mode);
+function sample(){if(mode==='single'){namesEl.value=Array.from({length:23},(_,i)=>`${i+1}번 선수`).join('\n')}else{el('team1').value=Array.from({length:15},(_,i)=>`1팀 ${i+1}번`).join('\n');el('team2').value=Array.from({length:15},(_,i)=>`2팀 ${i+1}번`).join('\n')}updateCount();save()}
+function clearAll(){namesEl.value='';el('team1').value='';el('team2').value='';localStorage.removeItem('soccer_names');localStorage.removeItem('soccer_team1');localStorage.removeItem('soccer_team2');updateCount();el('result').classList.add('hidden')}
 let lastText='';
-
-function makeTeams(){
- const ps=players(), n=ps.length;
- if(n<10){alert('최소 10명이 필요합니다.');return}
- // 4게임 x 10명 = 40회 출전기회를 도착순으로 순환 배정.
- // 단, 마지막에 한 번 더 배정된 사람을 다음 게임에서 우선 제외하여 출전 횟수를 최대한 균등화.
- const total=40, base=Math.floor(total/n), extra=total%n;
- // 각 선수의 목표 출전 횟수: 앞쪽(extra) 선수는 +1.
- const target=Object.fromEntries(ps.map((p,i)=>[p,base+(i<extra?1:0)]));
- const used=Object.fromEntries(ps.map(p=>[p,0]));
- const games=[];
- let cursor=0;
- for(let g=0;g<4;g++){
-   let chosen=[], safety=0;
-   while(chosen.length<10 && safety<1000){
-     const p=ps[cursor%n]; cursor=(cursor+1)%n; safety++;
-     if(used[p]<target[p] && !chosen.includes(p)){chosen.push(p);used[p]++}
-   }
-   // n<20 등에서 순환상 후보가 부족한 경우(정상적으로는 발생하지 않음) 보충
-   if(chosen.length<10){
-     for(const p of ps){if(chosen.length>=10)break;if(!chosen.includes(p)&&used[p]<target[p]){chosen.push(p);used[p]++}}
-   }
-   games.push(chosen);
- }
- render(games,ps,used);
-}
-
-function render(games,ps,used){
- const vals=Object.values(used), min=Math.min(...vals), max=Math.max(...vals);
- el('stats').innerHTML=`<span>${ps.length}명</span><span>4게임</span><span>게임당 10명</span><span>출전 ${min}~${max}회</span>`;
- lastText='⚽ 오늘 축구팀 편성\\n\\n'+games.map((g,i)=>`${i+1}게임\\n${g.map((p,j)=>`${j+1}. ${p}`).join('\\n')}`).join('\\n\\n');
- el('games').innerHTML=games.map((g,i)=>`<div class="card game"><h3>${i+1}게임 <span class="badge">우리 팀 10명</span></h3>${g.map((p,j)=>`<div class="player">${j+1}. ${p}</div>`).join('')}</div>`).join('');
- el('result').classList.remove('hidden');
- window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-}
-
-async function copyResult(){
- try{await navigator.clipboard.writeText(lastText);alert('편성 결과를 복사했어. 카톡에 붙여넣으면 돼.')}
- catch(e){prompt('아래 내용을 복사해서 카톡에 붙여넣어줘.',lastText)}
-}
-async function shareResult(){
- if(navigator.share){try{await navigator.share({title:'오늘 축구팀 편성',text:lastText})}catch(e){}}
- else copyResult();
-}
+function makeTeams(){const games=Math.max(1,Math.min(20,+gameEl.value||4)),size=Math.max(1,Math.min(30,+sizeEl.value||10));gameEl.value=games;sizeEl.value=size;save();if(mode==='dual')makeDual(games,size);else makeSingle(games,size)}
+function makeSingle(games,size){const ps=players(),n=ps.length;if(n<size){alert(`현재 ${n}명이라 경기당 ${size}명을 뽑을 수 없습니다.`);return}const total=games*size,base=Math.floor(total/n),extra=total%n,target=Object.fromEntries(ps.map((p,i)=>[p,base+(i<extra?1:0)])),used=Object.fromEntries(ps.map(p=>[p,0])),result=[];let cursor=0;for(let g=0;g<games;g++){const chosen=[];let tries=0;while(chosen.length<size&&tries<n*3){const p=ps[cursor%n];cursor=(cursor+1)%n;tries++;if(used[p]<target[p]&&!chosen.includes(p)){chosen.push(p);used[p]++}}if(chosen.length<size)for(const p of ps){if(chosen.length>=size)break;if(!chosen.includes(p)&&used[p]<target[p]){chosen.push(p);used[p]++}}if(chosen.length<size){alert('현재 인원과 설정으로 편성이 어렵습니다.');return}result.push(chosen)}renderSingle(result,used,n,games,size)}
+function makeDual(games,size){const a=parseNames(el('team1').value),b=parseNames(el('team2').value);if(a.length<size||b.length<size){alert(`1팀과 2팀 모두 최소 ${size}명이 필요합니다.`);return}const makePool=ps=>{const total=games*size,base=Math.floor(total/ps.length),extra=total%ps.length,target=Object.fromEntries(ps.map((p,i)=>[p,base+(i<extra?1:0)])),used=Object.fromEntries(ps.map(p=>[p,0])),gamesOut=[];let cursor=0;for(let g=0;g<games;g++){const chosen=[];let tries=0;while(chosen.length<size&&tries<ps.length*3){const p=ps[cursor%ps.length];cursor=(cursor+1)%ps.length;tries++;if(used[p]<target[p]&&!chosen.includes(p)){chosen.push(p);used[p]++}}if(chosen.length<size)for(const p of ps){if(chosen.length>=size)break;if(!chosen.includes(p)&&used[p]<target[p]){chosen.push(p);used[p]++}}gamesOut.push(chosen)}return{gamesOut,used}};const A=makePool(a),B=makePool(b);renderDual(A.gamesOut,B.gamesOut,A.used,B.used,a.length,b.length,games,size)}
+function renderSingle(games,used,n,gc,sz){const vals=Object.values(used);el('stats').innerHTML=`<span>상대팀 경기</span><span>${n}명</span><span>${gc}게임</span><span>게임당 ${sz}명</span><span>출전 ${Math.min(...vals)}~${Math.max(...vals)}회</span>`;lastText=`⚽ 오늘 축구팀 편성\n${gc}게임 · 게임당 ${sz}명\n\n`+games.map((g,i)=>`${i+1}게임\n${g.map((p,j)=>`${j+1}. ${p}`).join('\n')}`).join('\n\n');el('games').innerHTML=games.map((g,i)=>`<div class="card game"><h3>${i+1}게임 <span class="badge">우리 팀 ${sz}명</span></h3>${g.map((p,j)=>`<div class="player">${j+1}. ${p}</div>`).join('')}</div>`).join('');el('result').classList.remove('hidden');window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+function renderDual(A,B,ua,ub,na,nb,gc,sz){const va=Object.values(ua),vb=Object.values(ub);el('stats').innerHTML=`<span>1팀 vs 2팀</span><span>${gc}게임</span><span>팀당 ${sz}명</span><span>1팀 ${Math.min(...va)}~${Math.max(...va)}회</span><span>2팀 ${Math.min(...vb)}~${Math.max(...vb)}회</span>`;lastText=`⚽ 자체게임 편성\n1팀 vs 2팀 · ${gc}게임 · 팀당 ${sz}명\n\n`+A.map((g,i)=>`${i+1}게임\n[1팀]\n${g.map((p,j)=>`${j+1}. ${p}`).join('\n')}\n\n[2팀]\n${B[i].map((p,j)=>`${j+1}. ${p}`).join('\n')}`).join('\n\n');el('games').innerHTML=A.map((g,i)=>`<div class="card game"><h3>${i+1}게임 <span class="badge">1팀 vs 2팀 · 팀당 ${sz}명</span></h3><div class="teamtitle" style="padding:10px 12px 4px">1팀</div>${g.map((p,j)=>`<div class="player">${j+1}. ${p}</div>`).join('')}<div class="teamtitle" style="padding:12px 12px 4px">2팀</div>${B[i].map((p,j)=>`<div class="player">${j+1}. ${p}</div>`).join('')}</div>`).join('');el('result').classList.remove('hidden');window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+async function copyResult(){try{await navigator.clipboard.writeText(lastText);alert('편성 결과를 복사했어. 카톡에 붙여넣으면 돼.')}catch(e){prompt('아래 내용을 복사해줘.',lastText)}}async function shareResult(){if(navigator.share){try{await navigator.share({title:'오늘 축구팀 편성',text:lastText})}catch(e){}}else copyResult()}
 </script>
 </body>
 </html>
